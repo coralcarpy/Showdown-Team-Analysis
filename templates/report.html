@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PokéBuilder — Team Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #e3350d; --dark-red: #a02008; --yellow: #ffcb05;
+    --blue: #3d7dca; --dark-blue: #003a70;
+    --dark: #1a1a2e; --darker: #0f0f1a; --card: #1e2240; --card-lighter: #252a4a;
+    --text: #e8eaf6; --text-muted: #8892b0;
+    --green: #4caf50; --orange: #ff9800; --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--darker); color: var(--text); font-family: 'Nunito', sans-serif; min-height: 100vh; }
+
+  .header {
+    background: linear-gradient(135deg, var(--dark-red), var(--red) 50%, var(--dark-blue));
+    border-bottom: 4px solid var(--yellow);
+    padding: 20px 32px;
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .pokeball { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(180deg, var(--red) 50%, white 50%); border: 3px solid #333; position: relative; flex-shrink: 0; }
+  .pokeball::before { content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 100%; height: 3px; background: #333; }
+  .pokeball::after { content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 12px; height: 12px; border-radius: 50%; background: white; border: 3px solid #333; }
+  .logo { font-family: 'Press Start 2P', monospace; font-size: 14px; color: var(--yellow); text-shadow: 2px 2px 0 var(--dark-red); }
+  .logo span { display: block; font-size: 8px; color: white; margin-top: 6px; opacity: 0.85; }
+
+  .download-btn {
+    background: linear-gradient(135deg, var(--blue), var(--dark-blue));
+    border: none; border-radius: 10px; color: white;
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 14px;
+    padding: 12px 24px; cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 0 var(--dark-blue); white-space: nowrap;
+  }
+  .download-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--dark-blue); }
+
+  .main { max-width: 900px; margin: 0 auto; padding: 32px; }
+
+  /* Team header */
+  .team-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 36px; }
+  .poke-card {
+    background: var(--card); border-radius: 14px; padding: 14px; flex: 1; min-width: 120px; max-width: 150px;
+    border: 1px solid rgba(255,255,255,0.07); text-align: center; box-shadow: var(--shadow);
+  }
+  .poke-sprite { width: 72px; height: 72px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); margin-bottom: 6px; }
+  .poke-name { font-weight: 800; font-size: 12px; margin-bottom: 5px; }
+  .type-badges { display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; }
+  .type-badge { padding: 2px 6px; border-radius: 20px; font-size: 9px; font-weight: 800; text-transform: uppercase; color: white; text-shadow: 1px 1px 0 rgba(0,0,0,0.3); }
+
+  /* Section */
+  .section { margin-bottom: 28px; }
+  .section-title {
+    font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--yellow);
+    letter-spacing: 2px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,203,5,0.4), transparent); }
+
+  /* Archetype badge */
+  .archetype-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--blue), var(--dark-blue));
+    padding: 10px 24px; border-radius: 20px; font-family: 'Press Start 2P', monospace;
+    font-size: 9px; color: white; letter-spacing: 1px; box-shadow: 0 4px 12px rgba(61,125,202,0.4);
+  }
+
+  /* Coverage grid */
+  .coverage-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .coverage-item { background: var(--card); border-radius: 10px; padding: 12px 16px; }
+  .coverage-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; }
+  .coverage-types { font-size: 13px; font-weight: 700; line-height: 1.6; }
+  .gap { color: #ff7961; } .immune { color: #90caf9; } .resist { color: #a5d6a7; }
+
+  /* Hazard table */
+  .hazard-list { display: flex; flex-direction: column; gap: 8px; }
+  .hazard-row { background: var(--card); border-radius: 10px; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
+  .hazard-name { font-weight: 800; font-size: 13px; flex: 1; }
+  .hazard-bar { width: 100px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+  .hazard-bar-fill { height: 100%; border-radius: 4px; }
+  .hazard-pct { font-size: 12px; font-weight: 700; min-width: 50px; text-align: right; }
+  .boots-tag { font-size: 10px; padding: 2px 8px; background: rgba(61,125,202,0.3); border: 1px solid rgba(61,125,202,0.5); border-radius: 20px; color: #90caf9; font-weight: 700; }
+
+  /* Speed */
+  .speed-list { display: flex; flex-direction: column; gap: 8px; }
+  .speed-row { background: var(--card); border-radius: 10px; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
+  .speed-rank { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--yellow); min-width: 24px; }
+  .speed-name { font-weight: 800; font-size: 13px; flex: 1; }
+  .speed-bar { width: 120px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+  .speed-bar-fill { height: 100%; background: linear-gradient(90deg, var(--blue), #90caf9); border-radius: 4px; }
+  .speed-stat { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--blue); min-width: 40px; text-align: right; }
+
+  /* Threats */
+  .threat-item { background: var(--card); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; border-left: 4px solid var(--red); }
+  .threat-item.warn { border-left-color: var(--orange); }
+  .threat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .threat-name { font-weight: 800; font-size: 14px; }
+  .threat-count { background: var(--red); color: white; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; }
+  .threat-count.warn { background: var(--orange); }
+  .threat-mons { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+  .threat-mon { background: rgba(255,255,255,0.07); padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .threat-checks { font-size: 11px; color: var(--text-muted); }
+
+  /* Win conditions */
+  .wc-list { display: flex; flex-direction: column; gap: 8px; }
+  .wc-item { background: var(--card); border-radius: 10px; padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .wc-cat { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); min-width: 100px; }
+  .wc-mons { font-size: 13px; font-weight: 700; }
+
+  /* No data */
+  .ok-msg { color: var(--green); font-weight: 800; font-size: 14px; }
+  .warn-msg { color: #ff7961; font-weight: 800; font-size: 14px; }
+
+  /* Format badge */
+  .format-badge { display: inline-block; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 4px 12px; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 24px; }
+
+  .TYPE_COLORS { display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="pokeball"></div>
+    <div class="logo">PokéBuilder<span>Team Report</span></div>
+  </div>
+  <button class="download-btn" onclick="downloadTxt()">⬇ Download .txt</button>
+</div>
+
+<div class="main" id="reportMain">
+  <p style="color:var(--text-muted);text-align:center;padding:60px;font-size:14px">Loading report...</p>
+</div>
+
+<script>
+const TYPE_COLORS = {
+  Normal:'#A8A878',Fire:'#F08030',Water:'#6890F0',Electric:'#F8D030',
+  Grass:'#78C850',Ice:'#98D8D8',Fighting:'#C03028',Poison:'#A040A0',
+  Ground:'#E0C068',Flying:'#A890F0',Psychic:'#F85888',Bug:'#A8B820',
+  Rock:'#B8A038',Ghost:'#705898',Dragon:'#7038F8',Dark:'#705848',
+  Steel:'#B8B8D0',Fairy:'#EE99AC'
+};
+
+let reportData = null;
+
+window.addEventListener('load', () => {
+  try {
+    const raw = sessionStorage.getItem('pokebuilder_report');
+    if (!raw) {
+      document.getElementById('reportMain').innerHTML = '<p style="color:#ff7961;text-align:center;padding:60px;font-size:14px">⚠ No report data found. Go back and analyze a team first.</p>';
+      return;
+    }
+    reportData = JSON.parse(raw);
+    renderReport(reportData);
+  } catch(e) {
+    document.getElementById('reportMain').innerHTML = `<p style="color:#ff7961;text-align:center;padding:60px">Error loading report: ${e.message}</p>`;
+  }
+});
+
+function renderReport(data) {
+  const { team, analysis, format } = data;
+  const main = document.getElementById('reportMain');
+
+  let html = `<div class="format-badge">${format.toUpperCase()}</div>`;
+
+  // Team row
+  html += `<div class="section-title">YOUR TEAM</div><div class="team-row">`;
+  team.forEach(p => {
+    const ps_id = p.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const badges = (p.types||[]).map(t => `<span class="type-badge" style="background:${TYPE_COLORS[t]||'#888'}">${t}</span>`).join('');
+    html += `
+      <div class="poke-card">
+        <img class="poke-sprite"
+          src="https://play.pokemonshowdown.com/sprites/ani/${ps_id}.gif"
+          onerror="this.src='https://play.pokemonshowdown.com/sprites/gen5/${ps_id}.png'"
+          alt="${p.name}">
+        <div class="poke-name">${p.name}</div>
+        <div class="type-badges">${badges}</div>
+        ${p.item ? `<div style="font-size:10px;color:var(--text-muted);margin-top:5px">@ ${p.item}</div>` : ''}
+      </div>`;
+  });
+  html += `</div>`;
+
+  // Archetype
+  const archetype = analysis.win_conditions?.team_archetype;
+  html += `<div class="section">
+    <div class="section-title">TEAM ARCHETYPE</div>
+    <div class="archetype-badge">${archetype || 'Unknown'}</div>
+  </div>`;
+
+  // Defensive coverage
+  const allTypes = Object.keys(TYPE_COLORS);
+  const gaps = allTypes.filter(t => { const d = analysis.defensive_coverage?.[t]||{}; return !d.has_resist && !d.has_immunity; });
+  const immunities = allTypes.filter(t => (analysis.defensive_coverage?.[t]||{}).has_immunity);
+  const resists = allTypes.filter(t => { const d = analysis.defensive_coverage?.[t]||{}; return d.has_resist && !d.has_immunity; });
+
+  html += `<div class="section">
+    <div class="section-title">DEFENSIVE COVERAGE</div>
+    <div class="coverage-grid">
+      <div class="coverage-item">
+        <div class="coverage-label">❌ No Resist To</div>
+        <div class="coverage-types gap">${gaps.length ? gaps.join(', ') : '—'}</div>
+      </div>
+      <div class="coverage-item">
+        <div class="coverage-label">🛡 Immunities</div>
+        <div class="coverage-types immune">${immunities.length ? immunities.join(', ') : '—'}</div>
+      </div>
+      <div class="coverage-item">
+        <div class="coverage-label">✅ Resists</div>
+        <div class="coverage-types resist">${resists.length ? resists.join(', ') : '—'}</div>
+      </div>
+    </div>
+  </div>`;
+
+  // Hazard removal
+  const removal = analysis.hazard_removal;
+  html += `<div class="section"><div class="section-title">HAZARD REMOVAL</div>`;
+  if (!removal?.has_removal) {
+    html += `<p class="warn-msg">⚠ No hazard removal on this team!</p>`;
+  } else {
+    html += `<p class="ok-msg">✅ ${removal.removers.map(r => `${r.name} (${r.move})`).join(', ')}</p>`;
+  }
+  html += `</div>`;
+
+  // SR damage
+  const maxSR = Math.max(...(analysis.hazard_weakness||[]).map(h => h.sr_damage), 50);
+  html += `<div class="section"><div class="section-title">STEALTH ROCK DAMAGE</div><div class="hazard-list">`;
+  (analysis.hazard_weakness||[]).forEach(h => {
+    const dmg = h.sr_damage_with_boots;
+    const color = dmg === 0 ? '#4caf50' : dmg <= 12.5 ? '#ffcb05' : dmg <= 25 ? '#ff9800' : '#e3350d';
+    const barPct = Math.min(100, (dmg / 50) * 100);
+    html += `
+      <div class="hazard-row">
+        <span class="hazard-name">${h.name}</span>
+        ${h.has_boots ? '<span class="boots-tag">Boots</span>' : ''}
+        <div class="hazard-bar"><div class="hazard-bar-fill" style="width:${barPct}%;background:${color}"></div></div>
+        <span class="hazard-pct" style="color:${color}">${dmg > 0 ? dmg.toFixed(1)+'%' : 'Immune'}</span>
+      </div>`;
+  });
+  html += `</div></div>`;
+
+  // Speed tiers
+  const maxSpd = Math.max(...(analysis.speed_tiers||[]).map(s => s.calculated_speed), 1);
+  html += `<div class="section"><div class="section-title">SPEED TIERS</div><div class="speed-list">`;
+  (analysis.speed_tiers||[]).forEach((s, i) => {
+    html += `
+      <div class="speed-row">
+        <span class="speed-rank">#${i+1}</span>
+        <span class="speed-name">${s.name}</span>
+        <div class="speed-bar"><div class="speed-bar-fill" style="width:${(s.calculated_speed/maxSpd*100).toFixed(0)}%"></div></div>
+        <span class="speed-stat">${s.calculated_speed||'?'}</span>
+        <span style="font-size:11px;color:var(--text-muted);min-width:60px">base ${s.base_speed}</span>
+      </div>`;
+  });
+  html += `</div></div>`;
+
+  // Threats
+  const threats = analysis.threat_analysis?.threats || [];
+  html += `<div class="section"><div class="section-title">SHARED WEAKNESSES</div>`;
+  if (!threats.length) {
+    html += `<p class="ok-msg">✅ No major shared weaknesses!</p>`;
+  } else {
+    threats.forEach(t => {
+      const isCritical = t.threatened_count >= 3;
+      const typeBadges = (t.types||[]).map(tp => `<span class="type-badge" style="background:${TYPE_COLORS[tp]||'#888'}">${tp}</span>`).join('');
+      const monBadges = t.threatened_pokemon.map(p => `<span class="threat-mon">${p.name}</span>`).join('');
+      html += `
+        <div class="threat-item ${isCritical ? '' : 'warn'}">
+          <div class="threat-header">
+            <span class="threat-name">${t.threat}</span>
+            <span style="display:flex;gap:4px">${typeBadges}</span>
+            <span class="threat-count ${isCritical ? '' : 'warn'}">${t.threatened_count} mons</span>
+            ${t.usage_rate ? `<span style="font-size:11px;color:var(--text-muted);margin-left:auto">${t.usage_rate}% usage</span>` : ''}
+          </div>
+          <div class="threat-mons">${monBadges}</div>
+          ${t.checks?.length ? `<div class="threat-checks">Suggested checks: ${t.checks.join(', ')}</div>` : ''}
+        </div>`;
+    });
+  }
+  html += `</div>`;
+
+  // Win conditions
+  const wc = analysis.win_conditions?.win_conditions || {};
+  const catNames = {setup:'Setup Sweepers', hazard_setter:'Hazard Setters', pivot:'Pivots', priority:'Priority', wallbreaker_moves:'Wallbreakers'};
+  html += `<div class="section"><div class="section-title">WIN CONDITIONS</div><div class="wc-list">`;
+  let anyWC = false;
+  Object.entries(catNames).forEach(([cat, label]) => {
+    if ((wc[cat]||[]).length) {
+      anyWC = true;
+      const entries = wc[cat].map(e => `${e.pokemon} (${e.moves.join(', ')})`).join(' | ');
+      html += `<div class="wc-item"><span class="wc-cat">${label}</span><span class="wc-mons">${entries}</span></div>`;
+    }
+  });
+  if (!anyWC) html += `<p style="color:var(--text-muted);font-size:13px">No clear win conditions detected</p>`;
+  html += `</div></div>`;
+
+  main.innerHTML = html;
+  document.title = `PokéBuilder — ${format.toUpperCase()} Report`;
+}
+
+function downloadTxt() {
+  if (!reportData) return;
+  const { team, analysis, format } = reportData;
+  const allTypes = Object.keys(TYPE_COLORS);
+
+  let txt = `POKEBUILDER TEAM ANALYSIS\n`;
+  txt += `${'='.repeat(40)}\n`;
+  txt += `Format: ${format.toUpperCase()}\n\n`;
+
+  txt += `TEAM\n${'-'.repeat(20)}\n`;
+  team.forEach(p => { txt += `  ${p.name} (${(p.types||[]).join('/')})${p.item ? ` @ ${p.item}` : ''}\n`; });
+
+  txt += `\nTEAM ARCHETYPE\n${'-'.repeat(20)}\n`;
+  txt += `  ${analysis.win_conditions?.team_archetype || 'Unknown'}\n`;
+
+  txt += `\nDEFENSIVE COVERAGE\n${'-'.repeat(20)}\n`;
+  const gaps = allTypes.filter(t => { const d = analysis.defensive_coverage?.[t]||{}; return !d.has_resist && !d.has_immunity; });
+  const immunities = allTypes.filter(t => (analysis.defensive_coverage?.[t]||{}).has_immunity);
+  const resists = allTypes.filter(t => { const d = analysis.defensive_coverage?.[t]||{}; return d.has_resist && !d.has_immunity; });
+  txt += `  No resist to : ${gaps.join(', ') || 'none'}\n`;
+  txt += `  Immunities   : ${immunities.join(', ') || 'none'}\n`;
+  txt += `  Resists      : ${resists.join(', ') || 'none'}\n`;
+
+  txt += `\nHAZARD REMOVAL\n${'-'.repeat(20)}\n`;
+  const removal = analysis.hazard_removal;
+  txt += removal?.has_removal
+    ? `  ${removal.removers.map(r => `${r.name} (${r.move})`).join(', ')}\n`
+    : `  WARNING: No hazard removal!\n`;
+
+  txt += `\nSTEALTH ROCK DAMAGE\n${'-'.repeat(20)}\n`;
+  (analysis.hazard_weakness||[]).forEach(h => {
+    const dmg = h.sr_damage_with_boots;
+    txt += `  ${h.name.padEnd(14)} ${dmg > 0 ? dmg.toFixed(1)+'%' : 'Immune'}${h.has_boots ? ' (Boots)' : ''}${dmg >= 25 ? ' !!!' : ''}\n`;
+  });
+
+  txt += `\nSPEED TIERS\n${'-'.repeat(20)}\n`;
+  (analysis.speed_tiers||[]).forEach((s, i) => {
+    txt += `  ${String(i+1).padEnd(3)} ${s.name.padEnd(16)} ${String(s.calculated_speed||'?').padEnd(6)} (base ${s.base_speed})\n`;
+  });
+
+  txt += `\nSHARED WEAKNESSES\n${'-'.repeat(20)}\n`;
+  const threats = analysis.threat_analysis?.threats || [];
+  if (!threats.length) { txt += `  No major shared weaknesses!\n`; }
+  else {
+    threats.forEach(t => {
+      txt += `  ${t.threat} (${t.types.join('/')}): ${t.threatened_pokemon.map(p => p.name).join(', ')}\n`;
+      if (t.checks?.length) txt += `    Checks: ${t.checks.join(', ')}\n`;
+    });
+  }
+
+  txt += `\nWIN CONDITIONS\n${'-'.repeat(20)}\n`;
+  const wc = analysis.win_conditions?.win_conditions || {};
+  const catNames = {setup:'Setup', hazard_setter:'Hazards', pivot:'Pivots', priority:'Priority', wallbreaker_moves:'Wallbreakers'};
+  let anyWC = false;
+  Object.entries(catNames).forEach(([cat, label]) => {
+    if ((wc[cat]||[]).length) {
+      anyWC = true;
+      txt += `  ${label}: ${wc[cat].map(e => `${e.pokemon} (${e.moves.join(', ')})`).join(' | ')}\n`;
+    }
+  });
+  if (!anyWC) txt += `  None detected\n`;
+
+  txt += `\n${'='.repeat(40)}\nGenerated by PokéBuilder\n`;
+
+  const blob = new Blob([txt], {type: 'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `team-report-${format}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
