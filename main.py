@@ -14,7 +14,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+import os
+if os.path.isdir("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(team.router, prefix="/api/team", tags=["team"])
 app.include_router(analysis.router, prefix="/api/analysis", tags=["analysis"])
